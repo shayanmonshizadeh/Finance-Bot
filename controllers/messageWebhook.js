@@ -1,4 +1,4 @@
-const processMessage = require('../helpers/processMessage');
+const processMessage = require('../messageProcessing/processMessage');
 module.exports = (req, res) => {
    
     // Check if event from a page subscription
