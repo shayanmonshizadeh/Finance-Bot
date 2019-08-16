@@ -13,7 +13,7 @@ module.exports = (currency) => {
             fx.rates = oxr.rates;
             fx.base = oxr.base;
         
-            rate = parseInt(fx(1).from('USD').to(currency)); 
+            rate = parseFloat(fx(1).from('USD').to(currency)); 
             resolve(rate)
         }); 
     });

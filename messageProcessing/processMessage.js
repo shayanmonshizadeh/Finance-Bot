@@ -1,6 +1,7 @@
-const fetch = require('node-fetch');
 const dialogflow = require('dialogflow').v2beta1;
 const processResponse = require('./processResponse');
+const sendTextMessage = require('./sendMessage.js');
+
 
 // DF variables
 const dfProjectId = "financebot-vllhel";
@@ -29,6 +30,7 @@ function generateDFRequest(event) {
 }
 
 
+
 /**
  * 1. Detects intent based on request (incoming message) and forms result object
  *    with action, params, and fulfillment text
@@ -37,7 +39,9 @@ function generateDFRequest(event) {
 function processMessage(event) {
     const senderId = event.sender.id;
     const message = event.message.text;
+    const timeStamp = event.timestamp;
 
+    
     const request = generateDFRequest(event);
 
     sessionClient
@@ -48,16 +52,13 @@ function processMessage(event) {
             intent = {
                 action: response.queryResult.action,
                 params: response.queryResult.parameters.fields,
-                fulfillmentText: response.queryResult.fulfillmentText
+                fulfillmentText: response.queryResult.fulfillmentText,
+                timeStamp: timeStamp,
+                sender: senderId
             };
             console.log(intent);
 
             return processResponse(intent);
-        }).then(responseMessage => {
-            return responseMessage;
-        }).then(responseMessage => {
-            console.log("Response formulated: " + responseMessage);
-            return sendTextMessage(senderId, responseMessage);
         })
         .catch(err => {
             console.error('ERROR detecting intent:', err);
@@ -65,23 +66,6 @@ function processMessage(event) {
 }
 
 
-
-const FB_PAGE_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
-
-const sendTextMessage = (userId, text) => {
-
-    return fetch(
-        `https://graph.facebook.com/v2.6/me/messages?access_token=${FB_PAGE_TOKEN}`,
-        {
-            headers: { 'Content-Type': 'application/json' },
-            method: 'POST',
-            body: JSON.stringify({
-                messaging_type: 'RESPONSE',
-                recipient: { id: userId },
-                message: { text }
-            })
-        });
-};
 
 module.exports = (event) => {
     processMessage(event);
