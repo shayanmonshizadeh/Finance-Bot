@@ -7,7 +7,7 @@ const mysql = require('mysql');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-
+const port = process.env.PORT || 3000
 const db = mysql.createConnection ({
     host: 'us-cdbr-iron-east-02.cleardb.net',
     user: 'b0e0fc8c37bf37',
@@ -27,7 +27,7 @@ var rows;
 
 
 console.log(rows);
-app.listen(3000, () => console.log('Webhook server is listening, port 3000'));
+app.listen(port, () => console.log('Webhook server is listening, port ' + port));
 
 const verificationController = require('./controllers/verification');
 const messageWebhookController = require('./controllers/messageWebhook');
