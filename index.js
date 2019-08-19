@@ -9,10 +9,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 
 const db = mysql.createConnection ({
-    host: 'localhost',
-    user: 'fb',
-    password: 'supernova7',
-    database: 'financebot'
+    host: 'us-cdbr-iron-east-02.cleardb.net',
+    user: 'b0e0fc8c37bf37',
+    password: 'dc55c2c4',
+    database: 'heroku_c3e0e807ac4e90f'
 });
 
 db.connect((err) => {
@@ -25,14 +25,6 @@ db.connect((err) => {
 global.db = db;
 var rows;
 
-db.query("SELECT NOW()", async (err, result) => {
-    if (err) {
-        console.log(err);
-    } else {
-        console.log(result[0]);
-        rows = await result[0];
-    }
-});
 
 console.log(rows);
 app.listen(3000, () => console.log('Webhook server is listening, port 3000'));
