@@ -1,5 +1,6 @@
 const er = require("../helpers/exchangeRate");
 const sendTextMessage = require('./sendMessage.js');
+const pool = require('../index.js').pool;
 var senderID;
 
 module.exports = (intent) => {
@@ -13,11 +14,11 @@ module.exports = (intent) => {
     if (action[0] === "financebot") {
         if (action[1] === "addExpense") {
             handleAddExpense(fulfillmentText, params, intent.timeStamp)
-                .then(responseMessage => {(sendTextMessage(senderID, responseMessage, undo='true'))});
+                .then(responseMessage => { (sendTextMessage(senderID, responseMessage, undo = 'true')) });
         }
         if (action[1] === "changeCurrency") {
             return handleChangeCurrency(fulfillmentText, params, intent.timeStamp)
-                .then(responseMessage => {(sendTextMessage(senderID, responseMessage, undo=true))});
+                .then(responseMessage => { (sendTextMessage(senderID, responseMessage, undo = true)) });
         }
     }
 };
@@ -51,16 +52,25 @@ function handleAddExpense(text, params, timeStamp) {
 function getExchangeRate(newCurrency) {
     return new Promise((resolve, reject) => {
         if (!newCurrency) {
-            db.query(`SELECT * FROM currency ORDER BY CurrencyID DESC LIMIT 1;`, (err, result) => {
-                if (err) {
-                    console.log(err);
-                    resolve("Something went wrong while trying to get default exchange rate. Troubleshoot or try again.");
-                } else {
-                    resolve({ name: result[0]['CurrencyName'], rate: result[0]['CurrencyUSDToDC'] });
+            pool.getConnection(function (err, db) {
+                try {
+                    if (err) {
+                        console.log(err);
+                        resolve("Something went wrong while trying to get establish connection to the database. Troubleshoot or try again.");
+                    }
+                    db.query(`SELECT * FROM currency ORDER BY CurrencyID DESC LIMIT 1;`, (err, result) => {
+                        if (err) {
+                            console.log(err);
+                            resolve("Something went wrong while trying to get default exchange rate. Troubleshoot or try again.");
+                        } else {
+                            resolve({ name: result[0]['CurrencyName'], rate: result[0]['CurrencyUSDToDC'] });
+                        }
+                    });
+                } finally {
+                    db.release();
                 }
             })
         }
-
         // Not the default currency
         else {
             er(newCurrency)
@@ -78,25 +88,34 @@ function handleChangeCurrency(text, params, timeStamp) {
     // set default currency to newCurrency in database
     return new Promise((resolve, reject) => {
         // Get old currency first
-        db.query(`SELECT * FROM currency ORDER BY CurrencyID DESC LIMIT 1;`, (err, result) => {
-            if (err) {
-                console.log(err);
-                resolve("Something went wrong while trying to change default currency. Troubleshoot or try again.");
-            } else {
-                // Get old currency from DB
-                var oldCurrency = (result[0]['CurrencyName']);
-                const fulfillmentText = "Currency was changed from " + oldCurrency + " to " + newCurrency + ". Rate is 1 USD to ";
-
-                //if user entered an exhange rate use that one
-                if (params.number.kind === 'numberValue') {
-                    resolve(insertNewCurrency(fulfillmentText, newCurrency, params.number.numberValue, timeStamp));
+        pool.getConnection((err, db) => {
+            try {
+                if (err) {
+                    console.log(err);
+                    resolve("Something went wrong while trying to get establish connection to the database. Troubleshoot or try again.");
                 }
-                else {
-                    resolve(er(newCurrency).then(response => {
-                        return insertNewCurrency(fulfillmentText, newCurrency, response, timeStamp);;
-                    }));
-                }
+                db.query(`SELECT * FROM currency ORDER BY CurrencyID DESC LIMIT 1;`, (err, result) => {
+                    if (err) {
+                        console.log(err);
+                        resolve("Something went wrong while trying to change default currency. Troubleshoot or try again.");
+                    } else {
+                        // Get old currency from DB
+                        var oldCurrency = (result[0]['CurrencyName']);
+                        const fulfillmentText = "Currency was changed from " + oldCurrency + " to " + newCurrency + ". Rate is 1 USD to ";
 
+                        //if user entered an exhange rate use that one
+                        if (params.number.kind === 'numberValue') {
+                            resolve(insertNewCurrency(fulfillmentText, newCurrency, params.number.numberValue, timeStamp));
+                        }
+                        else {
+                            resolve(er(newCurrency).then(response => {
+                                return insertNewCurrency(fulfillmentText, newCurrency, response, timeStamp);;
+                            }));
+                        }
+                    }
+                })
+            } finally {
+                db.release();
             }
         })
     })
@@ -122,10 +141,21 @@ function handleChangeCurrency(text, params, timeStamp) {
 // Inserts into given table of database financebot given columns in the form of an array
 function dbInsert(tableName, columns) {
     return new Promise((resolve, reject) => {
-        db.query(`INSERT INTO ${tableName} VALUES (${columns.join(',')})`, (err, results) => {
-            if (err) {
-                reject(err)
-            } resolve();
+        pool.getConnection((err, db) => {
+            try {
+                if (err) {
+                    console.log(err);
+                    resolve("Something went wrong while trying to get establish connection to the database. Troubleshoot or try again.");
+                }
+                db.query(`INSERT INTO ${tableName} VALUES (${columns.join(',')})`, (err, results) => {
+                    if (err) {
+                        reject(err)
+                    } resolve();
+                })
+            } finally {
+                db.release();
+            }
+
         })
     })
 }

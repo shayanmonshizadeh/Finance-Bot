@@ -8,25 +8,15 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const port = process.env.PORT || 3000
-const db = mysql.createConnection ({
+const pool = mysql.createPool ({
     host: 'us-cdbr-iron-east-02.cleardb.net',
     user: 'b0e0fc8c37bf37',
     password: 'dc55c2c4',
     database: 'heroku_c3e0e807ac4e90f'
 });
 
-db.connect((err) => {
-    if (err) {
-        console.log(err);
-    } else {
-    console.log('Connected to database');
-    }
-});
-global.db = db;
-var rows;
+exports.pool = pool;
 
-
-console.log(rows);
 app.listen(port, () => console.log('Webhook server is listening, port ' + port));
 
 const verificationController = require('./controllers/verification');
