@@ -4,8 +4,12 @@
   "description": "Messenger bot that let's you track your expenses",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "index.js"
   },
+  "engines": {
+    "node": "10.x"
+  }, 
   "author": "Shayan Monshizadeh",
   "license": "ISC",
   "dependencies": {

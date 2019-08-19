@@ -13,7 +13,7 @@ module.exports = (intent) => {
     if (action[0] === "financebot") {
         if (action[1] === "addExpense") {
             handleAddExpense(fulfillmentText, params, intent.timeStamp)
-                .then(responseMessage => {(sendTextMessage(senderID, responseMessage, undo=true))});
+                .then(responseMessage => {(sendTextMessage(senderID, responseMessage, undo='true'))});
         }
         if (action[1] === "changeCurrency") {
             return handleChangeCurrency(fulfillmentText, params, intent.timeStamp)
