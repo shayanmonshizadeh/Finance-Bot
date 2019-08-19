@@ -16,7 +16,7 @@ const pool = mysql.createPool ({
 });
 
 exports.pool = pool;
-console.log(process.env.DIALOGFLOW_PRIVATE_KEY);
+
 app.listen(port, () => console.log('Webhook server is listening, port ' + port));
 
 const verificationController = require('./controllers/verification');
