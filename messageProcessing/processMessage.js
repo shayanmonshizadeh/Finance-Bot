@@ -9,7 +9,7 @@ const sessionId = "financebot";
 const languageCode = "en-US";
 const config = {
     credentials: {
-        private_key: /*JSON.parse*/(process.env.DIALOGFLOW_PRIVATE_KEY),
+        private_key: JSON.parse(process.env.DIALOGFLOW_PRIVATE_KEY),
         client_email: process.env.DIALOGFLOW_CLIENT_EMAIL
     }
 };
