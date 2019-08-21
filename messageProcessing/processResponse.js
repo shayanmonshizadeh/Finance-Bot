@@ -1,6 +1,7 @@
 const er = require("../helpers/exchangeRate");
 const sendTextMessage = require('./sendMessage.js');
 const pool = require('../index.js').pool;
+const db = require('../helpers/database');
 var senderID;
 
 module.exports = (intent) => {
@@ -14,14 +15,25 @@ module.exports = (intent) => {
     if (action[0] === "financebot") {
         if (action[1] === "addExpense") {
             handleAddExpense(fulfillmentText, params, intent.timeStamp)
-                .then(responseMessage => { (sendTextMessage(senderID, responseMessage, undo = 'true')) });
+                .then(responseMessage => { (sendTextMessage(senderID, responseMessage, undo = true)) });
         }
         if (action[1] === "changeCurrency") {
-            return handleChangeCurrency(fulfillmentText, params, intent.timeStamp)
-                .then(responseMessage => { (sendTextMessage(senderID, responseMessage, undo = true)) });
+            handleChangeCurrency(fulfillmentText, params, intent.timeStamp)
+                .then(responseMessage => { (sendTextMessage(senderID, responseMessage)) });
+        }
+        if (action[1] === 'undo') {
+            handleUndoAddExpense()
+                .then(responseMessage => { (sendTextMessage(senderID, responseMessage))})
+                .catch(errorMessage => {sendTextMessage(senderID, errorMessage)})
         }
     }
 };
+
+function handleUndoAddExpense() {
+    return db.dbDeleteLastRow('expenses', 
+    'Something went wrong trying to delete the last expense.', 
+    'Deleted last expense.')       
+}
 
 function handleAddExpense(text, params, timeStamp) {
     const category = params.category.stringValue;

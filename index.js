@@ -9,10 +9,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const port = process.env.PORT || 3000
 const pool = mysql.createPool ({
-    host: 'us-cdbr-iron-east-02.cleardb.net',
-    user: 'b0e0fc8c37bf37',
-    password: 'dc55c2c4',
-    database: 'heroku_c3e0e807ac4e90f'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE
 });
 
 exports.pool = pool;
