@@ -23,16 +23,89 @@ module.exports = (intent) => {
         }
         if (action[1] === 'undo') {
             handleUndoAddExpense()
-                .then(responseMessage => { (sendTextMessage(senderID, responseMessage))})
-                .catch(errorMessage => {sendTextMessage(senderID, errorMessage)})
+                .then(responseMessage => { (sendTextMessage(senderID, responseMessage)) })
+                .catch(errorMessage => { sendTextMessage(senderID, errorMessage) })
         }
+        if (action[1] === 'checkDayExpenses') {
+            checkDayExpenses(params)
+                .then(responseMessage => { (sendTextMessage(senderID, responseMessage)) })
+                .catch(errorMessage => { sendTextMessage(senderID, errorMessage) })
+        }
+
     }
 };
 
+
+function checkExpenses(dateRange) {
+
+}
+
+function checkDayExpenses(params) {
+    var today = params.date.stringValue;
+    if (!today) today = new Date(new Date(new Date().toDateString())).getTime();
+    else today = new Date(new Date(today).toDateString()).getTime();
+
+    var nextDay = today + 86400000; //A day
+    console.log(today + "  ---  " + nextDay);
+
+    return new Promise((reject, resolve) => {
+        
+        db.queryDateRange('expenses', "ExpensesDate", today / 1000, nextDay / 1000, "yse", "no")
+            .then(rows => {
+                if (rows.length === 0) {
+                    resolve("No expenses today. Nice.");}
+                else {
+
+
+                    const totalDayExpenses = rows.reduce((acc, current) => {
+                        return acc + parseFloat(current.ExpensesAmountInUSD);
+                    }, 0);
+
+                    
+                    const top5Expenses = rows.slice(-5).reduce((acc, current) => {
+                        var date = new Date(current.ExpensesDate*1000);
+                        
+                        var minutes = date.getMinutes();
+                        if (minutes < 10) minutes = '0' + minutes;
+                        var time = `${date.getHours()}:${minutes}`;
+                        
+                        return acc + `${upperFirstLetter(current.ExpensesCategory)} | ${current.ExpensesAmountInLocalCurrency} ${current.ExpensesLocalCurrency} | ${time}\n`
+                    }, "")
+
+                    const returnString = `Last 5 Expenses\n\n${top5Expenses}\nTotal Spent $${Math.round(totalDayExpenses)}`
+
+                
+                    db.getDefaultER()
+                    .then(rate => {
+                        console.log(rate);
+                        const returnString = `Last 5 Expenses\n\n${top5Expenses}\nTotal Spent: $${Math.round(totalDayExpenses)} (${Math.round(rate.rate*totalDayExpenses)} ${rate.name})`
+                        resolve(returnString);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        reject(err);
+                    });
+                
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                reject(err)
+            });
+    })
+
+}
+
+
+
+function upperFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 function handleUndoAddExpense() {
-    return db.dbDeleteLastRow('expenses', 
-    'Something went wrong trying to delete the last expense.', 
-    'Deleted last expense.')       
+    return db.dbDeleteLastRow('expenses',
+        'Something went wrong trying to delete the last expense.',
+        'Deleted last expense.')
 }
 
 function handleAddExpense(text, params, timeStamp) {
