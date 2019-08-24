@@ -78,7 +78,7 @@ function checkDayExpenses(params) {
                     db.getDefaultER()
                     .then(rate => {
                         console.log(rate);
-                        const returnString = `Last 5 Expenses\n\n${top5Expenses}\nTotal Spent: $${Math.round(totalDayExpenses)} (${Math.round(rate.rate*totalDayExpenses)})`;
+                        const returnString = `Last 5 Expenses\n\n${top5Expenses}\nTotal Spent: $${Math.round(totalDayExpenses)} (${Math.round(rate.rate*totalDayExpenses)} ${rate.name})`;
                         resolve(returnString);
                     })
                     .catch(err => {
