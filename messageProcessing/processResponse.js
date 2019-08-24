@@ -69,16 +69,16 @@ function checkDayExpenses(params) {
                         if (minutes < 10) minutes = '0' + minutes;
                         var time = `${date.getHours()}:${minutes}`;
                         
-                        return acc + `${upperFirstLetter(current.ExpensesCategory)} | ${current.ExpensesAmountInLocalCurrency} ${current.ExpensesLocalCurrency} | ${time}\n`
+                        return acc + `${upperFirstLetter(current.ExpensesCategory)} | ${current.ExpensesAmountInLocalCurrency} ${current.ExpensesLocalCurrency} | ${time}\n`;
                     }, "")
 
-                    const returnString = `Last 5 Expenses\n\n${top5Expenses}\nTotal Spent $${Math.round(totalDayExpenses)}`
+                    const returnString = `Last 5 Expenses\n\n${top5Expenses}\nTotal Spent $${Math.round(totalDayExpenses)}`;
 
                 
                     db.getDefaultER()
                     .then(rate => {
                         console.log(rate);
-                        const returnString = `Last 5 Expenses\n\n${top5Expenses}\nTotal Spent: $${Math.round(totalDayExpenses)} (${Math.round(rate.rate*totalDayExpenses)} ${rate.name})`
+                        const returnString = `Last 5 Expenses\n\n${top5Expenses}\nTotal Spent: $${Math.round(totalDayExpenses)} (${Math.round(rate.rate*totalDayExpenses)})`;
                         resolve(returnString);
                     })
                     .catch(err => {
@@ -121,10 +121,14 @@ function handleAddExpense(text, params, timeStamp) {
         currency = currencyParams.structValue.fields.currency.stringValue;
     }
 
+    var date = params.date.stringValue;
+    if (!date) date = timeStamp/1000;
+    else date = new Date(date).getTime() / 1000;
+
     // Database format: (ID, Category, AmountLocal, LocalCurrency, AmountUSD, TimeInUnix)
     return new Promise((resolve, reject) => {
         getExchangeRate(currency).then(response => {
-            dbInsert('expenses', ['NULL', `'${category}'`, amountSpent, `'${response.name}'`, amountSpent / response.rate, timeStamp / 1000]) // Insert into DB
+            dbInsert('expenses', ['NULL', `'${category}'`, amountSpent, `'${response.name}'`, amountSpent / response.rate, date]) // Insert into DB
                 .catch(err => {
                     console.log(err);
                     resolve("Something went wrong while adding expense to database. Troubleshoot or try again.");
