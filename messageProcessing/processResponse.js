@@ -40,10 +40,19 @@ function checkExpenses(dateRange) {
 
 }
 
+function checkWeekExpenses(params) {
+    
+}
+
 function checkDayExpenses(params) {
     var today = params.date.stringValue;
     if (!today) today = new Date(new Date(new Date().toDateString())).getTime();
-    else today = new Date(new Date(today).toDateString()).getTime();
+    else {
+        today = new Date(new Date(today).toDateString()).getTime();
+        if (today > new Date().getTime()) {
+            today = today - (86400000 * 365); //A year
+        }
+    }
 
     var nextDay = today + 86400000; //A day
     console.log(today + "  ---  " + nextDay);

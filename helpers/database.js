@@ -29,7 +29,7 @@ function dbDeleteLastRow(table, errorMessage, resolveMessage) {
     });
 }
 
-function queryDateRange(table, columnName, startTime, endTime, errorMessage, resolveMessage) {
+function queryDateRange(table, columnName, startTime, endTime) {
     return new Promise((resolve, reject) => {
         pool.getConnection((err, db) => {
             if (err) {
