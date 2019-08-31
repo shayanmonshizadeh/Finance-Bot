@@ -32,7 +32,7 @@ module.exports = (intent) => {
         }
         if (action[1] === 'checkDayExpenses') {
             checkDayExpenses(params)
-                .then(responseMessage => { (sendTextMessage(senderID, responseMessage)) })
+                .then(responseMessage => { (sendTextMessage(senderID, responseMessage, ["undoReply"])) })
                 .catch(errorMessage => { sendTextMessage(senderID, errorMessage) })
         }
 
