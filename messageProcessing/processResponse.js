@@ -27,7 +27,10 @@ module.exports = (intent) => {
         }
         if (action[1] === 'undo') {
             handleUndoAddExpense()
-                .then(responseMessage => { (sendTextMessage(senderID, responseMessage, ["todayReply"])) })
+                .then(responseMessage => { (sendTextMessage(senderID, responseMessage)) })
+                .catch(errorMessage => { sendTextMessage(senderID, errorMessage) })
+            checkDayExpenses({"date" : {"stringValue": ""}})
+                .then(responseMessage => { (sendTextMessage(senderID, responseMessage, ["undoReply"])) })
                 .catch(errorMessage => { sendTextMessage(senderID, errorMessage) })
         }
         if (action[1] === 'checkDayExpenses') {
@@ -61,7 +64,7 @@ function checkDayExpenses(params) {
     var nextDay = today + 86400000; //A day
     console.log(today + "  ---  " + nextDay);
 
-    return new Promise((reject, resolve) => {
+    return new Promise((resolve, reject) => {
         
         db.queryDateRange('expenses', "ExpensesDate", today / 1000, nextDay / 1000, "yse", "no")
             .then(rows => {

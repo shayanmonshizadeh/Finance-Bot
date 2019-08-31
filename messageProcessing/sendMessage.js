@@ -20,37 +20,43 @@ const autoReplies = {
 
 // Replies is an array with potential automatic replies
 module.exports = (userId, text, replies) => {
-    const FB_PAGE_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
-    quick_replies = [];
+    try {
+        const FB_PAGE_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
+        quick_replies = [];
 
-    if (replies) {
-        for (reply of replies) {
-            console.log(autoReplies[reply]);
-            quick_replies.push(autoReplies[reply]);
+        if (replies) {
+            for (reply of replies) {
+                console.log(autoReplies[reply]);
+                quick_replies.push(autoReplies[reply]);
+            }
+            console.log(quick_replies[0]);
+
+            message = { 
+                text : text,
+                quick_replies: quick_replies
+            }
+        } else {
+            console.log(replies);
+            message = {
+                text : text
+            };
         }
-        console.log(quick_replies[0]);
 
-        message = { 
-            text : text,
-            quick_replies: quick_replies
+        
+
+        return fetch(
+            `https://graph.facebook.com/v2.6/me/messages?access_token=${FB_PAGE_TOKEN}`,
+            {
+                headers: { 'Content-Type': 'application/json' },
+                method: 'POST',
+                body: JSON.stringify({
+                    messaging_type: 'RESPONSE',
+                    recipient: { id: userId },
+                    message: message
+                })
+            });
         }
-    } else {
-        message = {
-            text: text
-        };
-    }
-
-    
-
-    return fetch(
-        `https://graph.facebook.com/v2.6/me/messages?access_token=${FB_PAGE_TOKEN}`,
-        {
-            headers: { 'Content-Type': 'application/json' },
-            method: 'POST',
-            body: JSON.stringify({
-                messaging_type: 'RESPONSE',
-                recipient: { id: userId },
-                message: message
-            })
-        });
+        catch {
+            throw Error("error")
+        }
 } 
