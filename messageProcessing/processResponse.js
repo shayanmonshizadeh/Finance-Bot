@@ -15,7 +15,11 @@ module.exports = (intent) => {
     if (action[0] === "financebot") {
         if (action[1] === "addExpense") {
             handleAddExpense(fulfillmentText, params, intent.timeStamp)
-                .then(responseMessage => { (sendTextMessage(senderID, responseMessage, undo = true)) });
+                .then(responseMessage => { (sendTextMessage(senderID, responseMessage, ["undoReply", "todayReply"])) })
+                .catch(errorMessage => { 
+                    console.log(errorMessage);
+                    sendTextMessage(senderID, errorMessage) 
+                });
         }
         if (action[1] === "changeCurrency") {
             handleChangeCurrency(fulfillmentText, params, intent.timeStamp)
@@ -23,7 +27,7 @@ module.exports = (intent) => {
         }
         if (action[1] === 'undo') {
             handleUndoAddExpense()
-                .then(responseMessage => { (sendTextMessage(senderID, responseMessage)) })
+                .then(responseMessage => { (sendTextMessage(senderID, responseMessage, ["todayReply"])) })
                 .catch(errorMessage => { sendTextMessage(senderID, errorMessage) })
         }
         if (action[1] === 'checkDayExpenses') {
